@@ -1,5 +1,9 @@
 [package]
 name = "framing"
+description = "Audio frames, video frames and composing them."
+repository = "https://github.com/quadrupleslap/framing"
+documentation = "https://docs.rs/framing"
+license = "MIT"
 version = "0.1.0"
 authors = ["Ram <quadrupleslap@gmail.com>"]
 
