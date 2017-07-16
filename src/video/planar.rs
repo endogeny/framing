@@ -55,6 +55,14 @@ impl<T: ByteChannels> PlanarFrame<T> {
         Self { bytes, width, height, pixel: PhantomData }
     }
 
+    /// Returns a read-only view into the frame's byte source.
+    ///
+    /// This function is not as slow as you'd expect, because `Bytes` is
+    /// actually reference-counted.
+    pub fn bytes(&self) -> Bytes {
+        self.bytes.clone()
+    }
+
     /// Creates a new frame using the given function to fill the buffer.
     /// It is guaranteed that the mapping will be called **exactly once** for
     /// each of the integers in the range `[0, width) * [0, height)`.
