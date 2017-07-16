@@ -1,0 +1,10 @@
+[package]
+name = "framing"
+version = "0.1.0"
+authors = ["Ram <quadrupleslap@gmail.com>"]
+
+[dependencies]
+bytes = "0.4"
+clamp = "0.1"
+rayon = "0.8"
+time = "0.1"
