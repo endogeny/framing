@@ -37,3 +37,14 @@ pub trait VideoFrame {
     /// that makes no sense whatsoever.
     unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel;
 }
+
+impl<'a, T> VideoFrame for &'a T where T: VideoFrame {
+    type Pixel = T::Pixel;
+
+    fn width(&self) -> usize { (*self).width() }
+    fn height(&self) -> usize { (*self).height() }
+
+    unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel {
+        (*self).pixel(x, y)
+    }
+}
