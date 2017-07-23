@@ -16,7 +16,5 @@ pub mod video;
 // TODO(quadrupleslap): Composition and muxing helpers.
 
 // TODO(quadrupleslap): Remember to write these (in separate crates):
-// - lodepng bindings.
 // - FFmpeg bindings.
 // - vulkano bindings.
-// - scrap bindings.

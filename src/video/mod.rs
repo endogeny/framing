@@ -1,4 +1,5 @@
 mod formats;
+mod function;
 mod chunky;
 mod planar;
 mod transforms;
@@ -7,6 +8,7 @@ pub use self::formats::*;
 pub use self::transforms::*;
 pub use self::chunky::*;
 pub use self::planar::*;
+pub use self::function::*;
 
 /// A `VideoFrame` is just a still image.
 ///

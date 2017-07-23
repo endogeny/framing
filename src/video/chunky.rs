@@ -30,7 +30,7 @@ impl<T: ByteChannels> VideoFrame for ChunkyFrame<T> {
         let mut channels = T::Channels::default();
 
         ptr::copy_nonoverlapping(
-            self.bytes[off..].as_ptr(),
+            self.bytes.as_ptr().offset(off as isize),
             channels.as_mut().as_mut_ptr(),
             T::width()
         );
@@ -63,14 +63,12 @@ impl<T: ByteChannels> ChunkyFrame<T> {
         self.bytes.clone()
     }
 
-    /// Creates a new frame using the given function to fill the buffer.
+    /// Creates a new frame using the given frame to fill the buffer.
     /// It is guaranteed that the mapping will be called **exactly once** for
     /// each of the integers in the range `[0, width) * [0, height)`.
-    pub fn new<F: Fn(usize, usize) -> T + Sync>(
-        width: usize,
-        height: usize,
-        map: F
-    ) -> Self {
+    pub fn new<U>(frame: U) -> Self
+    where U: VideoFrame<Pixel = T> + Sync {
+        let (width, height) = (frame.width(), frame.height());
         let length = width * height;
         let size = T::width() * length;
 
@@ -78,30 +76,32 @@ impl<T: ByteChannels> ChunkyFrame<T> {
         let ptr = AtomicPtr::new(bytes.as_mut_ptr());
         unsafe { bytes.set_len(size); }
 
-        (0..length).into_par_iter().for_each(|i| {
-            let (x, y) = (i % width, i / width);
-            let ptr = ptr.load(Ordering::Relaxed);
-            let channels = T::Channels::from(map(x, y));
+        (0..length).into_par_iter().for_each(|i| unsafe {
+            let channels = T::Channels::from({
+                let (x, y) = (i % width, i / width);
+                frame.pixel(x, y).into()
+            });
 
-            unsafe {
-                ptr::copy_nonoverlapping(
-                    channels.as_ref().as_ptr(),
-                    ptr.offset((T::width() * i) as isize),
-                    T::width()
-                );
-            }
+            let ptr = ptr.load(Ordering::Relaxed);
+            ptr::copy_nonoverlapping(
+                channels.as_ref().as_ptr(),
+                ptr.offset((T::width() * i) as _),
+                T::width()
+            );
         });
 
-        ChunkyFrame::from_bytes(width, height, bytes.freeze())
+        Self::from_bytes(width, height, bytes.freeze())
     }
 }
 
 #[test]
 fn black() {
-    use super::{Rgba, pixels};
+    use super::{Function, Rgba, pixels};
 
     let (w, h) = (1920, 1080);
-    let frame = ChunkyFrame::new(w, h, |_, _| Rgba(0, 0, 0, 0));
+    let frame = ChunkyFrame::new(
+        Function::new(w, h, |_, _| Rgba(0, 0, 0, 0))
+    );
 
     assert_eq!(frame.width(), w);
     assert_eq!(frame.height(), h);

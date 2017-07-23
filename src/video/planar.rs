@@ -66,11 +66,9 @@ impl<T: ByteChannels> PlanarFrame<T> {
     /// Creates a new frame using the given function to fill the buffer.
     /// It is guaranteed that the mapping will be called **exactly once** for
     /// each of the integers in the range `[0, width) * [0, height)`.
-    pub fn new<F: Fn(usize, usize) -> T + Sync>(
-        width: usize,
-        height: usize,
-        map: F
-    ) -> Self {
+    pub fn new<U>(frame: U) -> Self
+    where U: VideoFrame<Pixel = T> + Sync {
+        let (width, height) = (frame.width(), frame.height());
         let length = width * height;
         let size = T::width() * length;
 
@@ -78,16 +76,16 @@ impl<T: ByteChannels> PlanarFrame<T> {
         let ptr = AtomicPtr::new(bytes.as_mut_ptr());
         unsafe { bytes.set_len(size); }
 
-        (0..length).into_par_iter().for_each(|i| {
-            let (x, y) = (i % width, i / width);
-            let base = ptr.load(Ordering::Relaxed);
-            let mut off = i;
-            
-            for channel in T::Channels::from(map(x, y)).as_ref() {
-                unsafe {
-                    *base.offset(off as isize) = *channel;
-                    off += length;
-                }
+        (0..length).into_par_iter().for_each(|i| unsafe {
+            let channels = T::Channels::from({
+                let (x, y) = (i % width, i / width);
+                frame.pixel(x, y).into()
+            });
+
+            let mut ptr = ptr.load(Ordering::Relaxed).offset(i as _);
+            for &channel in channels.as_ref() {
+                *ptr = channel;
+                ptr = ptr.offset(length as _);
             }
         });
 
@@ -97,10 +95,12 @@ impl<T: ByteChannels> PlanarFrame<T> {
 
 #[test]
 fn black() {
-    use super::{Rgba, pixels};
+    use super::{Function, Rgba, pixels};
 
     let (w, h) = (1280, 720);
-    let frame = PlanarFrame::new(w, h, |_, _| Rgba(0, 0, 0, 0));
+    let frame = PlanarFrame::new(
+        Function::new(w, h, |_, _| Rgba(0, 0, 0, 0))
+    );
 
     assert_eq!(frame.width(), w);
     assert_eq!(frame.height(), h);
