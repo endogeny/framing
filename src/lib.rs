@@ -12,9 +12,5 @@ extern crate time;
 pub mod video;
 
 // TODO(quadrupleslap): Audio.
-
 // TODO(quadrupleslap): Composition and muxing helpers.
-
-// TODO(quadrupleslap): Remember to write these (in separate crates):
-// - FFmpeg bindings.
-// - vulkano bindings.
+// TODO(quadrupleslap): FFmpeg bindings.
