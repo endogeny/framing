@@ -1,45 +1,45 @@
 use bytes::{Bytes, BytesMut};
 use rayon::prelude::*;
 use std::marker::PhantomData;
+use std::ptr;
 use std::sync::atomic::{AtomicPtr, Ordering};
-use super::{VideoFrame, ByteChannels};
+use super::{Image, AsBytes};
 
-/// A [planar frame](https://en.wikipedia.org/wiki/Planar_(computer_graphics)).
+/// A [chunky frame](https://en.wikipedia.org/wiki/Packed_pixel).
 ///
-/// Each plane is made up of one-byte subpixels, and the planes are stored
-/// contiguously in memory, in the order specified by the pixel itself. So, for
-/// example, a BGRA planar frame would have all the B bytes in order, then all
-/// the G bytes, then the R bytes, and finally the A bytes, with each plane
-/// covering the entire image in row-major order.
+/// In this format, each pixel is stored contiguously, and the entire image is
+/// stored in row-major order. For example, this means that an RGBA image would
+/// store the RGBA values of the top-left pixel, then each of the RGBA values of
+/// the pixel immediately to the right, and so on, moving down through each row.
 #[derive(Clone, Debug)]
-pub struct PlanarFrame<T> {
+pub struct ChunkyFrame<T> {
     bytes: Bytes,
     width: usize,
     height: usize,
     pixel: PhantomData<T>
 }
 
-impl<T: ByteChannels> VideoFrame for PlanarFrame<T> {
+impl<T> Image for ChunkyFrame<T> where T: AsBytes {
     type Pixel = T;
 
     fn width(&self)  -> usize { self.width }
     fn height(&self) -> usize { self.height }
 
     unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel {
-        let len = self.width * self.height;
-        let mut off = y * self.width + x;
-        let mut channels = T::Channels::default();
+        let off = T::width() * (y * self.width + x);
+        let mut bytes = T::Bytes::default();
 
-        for channel in channels.as_mut() {
-            *channel = *self.bytes.get_unchecked(off);
-            off += len;
-        }
+        ptr::copy_nonoverlapping(
+            self.bytes.as_ptr().offset(off as isize),
+            bytes.as_mut().as_mut_ptr(),
+            T::width()
+        );
 
-        channels.into()
+        bytes.into()
     }
 }
 
-impl<T: ByteChannels> PlanarFrame<T> {
+impl<T> ChunkyFrame<T> where T: AsBytes {
     /// Creates a new frame backed by the provided byte source.
     ///
     /// # Panics
@@ -63,11 +63,11 @@ impl<T: ByteChannels> PlanarFrame<T> {
         self.bytes.clone()
     }
 
-    /// Creates a new frame using the given function to fill the buffer.
+    /// Creates a new frame using the given frame to fill the buffer.
     /// It is guaranteed that the mapping will be called **exactly once** for
     /// each of the integers in the range `[0, width) * [0, height)`.
     pub fn new<U>(frame: U) -> Self
-    where U: VideoFrame<Pixel = T> + Sync {
+    where U: Image<Pixel = T> + Sync {
         let (width, height) = (frame.width(), frame.height());
         let length = width * height;
         let size = T::width() * length;
@@ -77,16 +77,16 @@ impl<T: ByteChannels> PlanarFrame<T> {
         unsafe { bytes.set_len(size); }
 
         (0..length).into_par_iter().for_each(|i| unsafe {
-            let channels = T::Channels::from({
-                let (x, y) = (i % width, i / width);
-                frame.pixel(x, y).into()
-            });
+            let ptr = ptr.load(Ordering::Relaxed);
+            let (x, y) = (i % width, i / width);
 
-            let mut ptr = ptr.load(Ordering::Relaxed).offset(i as _);
-            for &channel in channels.as_ref() {
-                *ptr = channel;
-                ptr = ptr.offset(length as _);
-            }
+            let bytes = T::Bytes::from(frame.pixel(x, y).into());
+
+            ptr::copy_nonoverlapping(
+                bytes.as_ref().as_ptr(),
+                ptr.offset((T::width() * i) as _),
+                T::width()
+            );
         });
 
         Self::from_bytes(width, height, bytes.freeze())
@@ -95,16 +95,16 @@ impl<T: ByteChannels> PlanarFrame<T> {
 
 #[test]
 fn black() {
-    use super::{Function, Rgba, pixels};
+    use super::{Function, Rgba, iter};
 
-    let (w, h) = (1280, 720);
-    let frame = PlanarFrame::new(
+    let (w, h) = (1920, 1080);
+    let frame = ChunkyFrame::new(
         Function::new(w, h, |_, _| Rgba(0, 0, 0, 0))
     );
 
     assert_eq!(frame.width(), w);
     assert_eq!(frame.height(), h);
     assert_eq!(frame.bytes, vec![0; w * h * 4]);
-    assert_eq!(pixels(&frame).count(), w * h);
-    assert!(pixels(&frame).all(|x| x == Rgba(0, 0, 0, 0)));
+    assert_eq!(iter(&frame).count(), w * h);
+    assert!(iter(&frame).all(|(_, _, x)| x == Rgba(0, 0, 0, 0)));
 }

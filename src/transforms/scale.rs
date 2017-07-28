@@ -1,4 +1,4 @@
-use super::super::VideoFrame;
+use super::super::Image;
 
 /// Scales a frame to the given size, using nearest-neighbor interpolation.
 pub fn scale<T>(
@@ -16,7 +16,7 @@ pub struct Scale<T> {
     frame: T
 }
 
-impl<T: VideoFrame> VideoFrame for Scale<T> {
+impl<T: Image> Image for Scale<T> {
     type Pixel = T::Pixel;
 
     fn width(&self) -> usize { self.width }

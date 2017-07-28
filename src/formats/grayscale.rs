@@ -1,12 +1,12 @@
 use clamp::clamp;
-use super::{Rgba, ByteChannels};
+use super::{Rgba, AsBytes};
 
 /// A pixel that is one byte long and has just an intensity channel.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub struct Grayscale(pub u8);
+pub struct Grayscale<T = u8>(pub T);
 
-unsafe impl ByteChannels for Grayscale {
-    type Channels = [u8; 1];
+unsafe impl AsBytes for Grayscale {
+    type Bytes = [u8; 1];
     fn width() -> usize { 1 }
 }
 

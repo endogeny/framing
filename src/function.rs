@@ -1,4 +1,4 @@
-use super::VideoFrame;
+use super::Image;
 
 /// A frame backed by a function.
 ///
@@ -13,7 +13,7 @@ where F: Fn(usize, usize) -> T {
     func: F
 }
 
-impl<T, F> VideoFrame for Function<T, F>
+impl<T, F> Image for Function<T, F>
 where F: Fn(usize, usize) -> T{
     type Pixel = T;
 

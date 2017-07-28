@@ -1,15 +1,15 @@
 use clamp::clamp;
-use super::{Rgba, ByteChannels};
+use super::{Rgba, AsBytes};
 
 /// A three-byte long pixel in the Y'CbCr format.
 ///
 /// Conversion to and from RGBA follows the BT.709 standard for 8-bit digital
 /// representation of Y'CbCr encoded pixels.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub struct Yuv(pub u8, pub u8, pub u8);
+pub struct Yuv<T = u8>(pub T, pub T, pub T);
 
-unsafe impl ByteChannels for Yuv {
-    type Channels = [u8; 3];
+unsafe impl AsBytes for Yuv {
+    type Bytes = [u8; 3];
     fn width() -> usize { 3 }
 }
 

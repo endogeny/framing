@@ -1,12 +1,12 @@
-use super::ByteChannels;
+use super::AsBytes;
 
 /// A pixel that is four bytes long and is made of a red, green, blue and alpha
 /// channel, in that order.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
+pub struct Rgba<T = u8>(pub T, pub T, pub T, pub T);
 
-unsafe impl ByteChannels for Rgba {
-    type Channels = [u8; 4];
+unsafe impl AsBytes for Rgba {
+    type Bytes = [u8; 4];
     fn width() -> usize { 4 }
 }
 

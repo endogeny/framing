@@ -1,7 +1,7 @@
-use super::super::VideoFrame;
+use super::super::Image;
 
 /// Crops the given frame to the given rectangle.
-pub fn crop<T: VideoFrame>(
+pub fn crop<T: Image>(
     start: (usize, usize),
     size:  (usize, usize),
     frame: T
@@ -16,7 +16,7 @@ pub struct Crop<T> {
     frame: T
 }
 
-impl<T: VideoFrame> VideoFrame for Crop<T> {
+impl<T: Image> Image for Crop<T> {
     type Pixel = T::Pixel;
 
     fn width(&self) -> usize { self.size.0 }

@@ -1,10 +1,10 @@
-use super::super::VideoFrame;
+use super::super::Image;
 
 /// Uses the given pixel to pad a frame.
 ///
 /// The result will have a width of `left + frame.width + right` and a height of
 /// `top + frame.height + bottom`.
-pub fn pad<T: VideoFrame>(
+pub fn pad<T: Image>(
     top: usize,
     bottom: usize,
     left: usize,
@@ -16,7 +16,7 @@ pub fn pad<T: VideoFrame>(
 }
 
 #[doc(hidden)]
-pub struct Pad<T: VideoFrame> {
+pub struct Pad<T: Image> {
     top: usize,
     bottom: usize,
     left: usize,
@@ -25,7 +25,7 @@ pub struct Pad<T: VideoFrame> {
     frame: T
 }
 
-impl<T: VideoFrame> VideoFrame for Pad<T>
+impl<T: Image> Image for Pad<T>
 where T::Pixel: Clone {
     type Pixel = T::Pixel;
 

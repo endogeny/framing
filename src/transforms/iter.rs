@@ -1,11 +1,11 @@
 use rayon::prelude::*;
-use super::super::VideoFrame;
+use super::super::Image;
 
 /// Iterates over the pixels of a frame sequentially.
 pub fn iter<'a, T>(frame: &'a T)
     -> impl Iterator<Item = (usize, usize, T::Pixel)>
 where
-    T: VideoFrame + Sync,
+    T: Image + Sync,
     T::Pixel: Send,
 {
     let (w, h) = (frame.width(), frame.height());
@@ -20,7 +20,7 @@ where
 pub fn par_iter<'a, T>(frame: &'a T)
     -> impl ParallelIterator<Item = (usize, usize, T::Pixel)>
 where
-    T: VideoFrame + Sync,
+    T: Image + Sync,
     T::Pixel: Send,
 {
     let (w, h) = (frame.width(), frame.height());
