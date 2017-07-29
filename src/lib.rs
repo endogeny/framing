@@ -17,6 +17,7 @@ pub use self::formats::*;
 pub use self::transforms::*;
 pub use self::chunky::*;
 pub use self::function::*;
+use std::ops::Deref;
 
 /// A `Image` is just a still image.
 ///
@@ -46,13 +47,13 @@ pub trait Image {
     unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel;
 }
 
-impl<'a, T> Image for &'a T where T: Image {
+impl<T, U> Image for U where U: Deref<Target = T>, T: Image {
     type Pixel = T::Pixel;
 
-    fn width(&self) -> usize { (*self).width() }
-    fn height(&self) -> usize { (*self).height() }
+    fn width(&self) -> usize { self.deref().width() }
+    fn height(&self) -> usize { self.deref().height() }
 
     unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel {
-        (*self).pixel(x, y)
+        self.deref().pixel(x, y)
     }
 }
