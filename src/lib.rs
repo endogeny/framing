@@ -47,7 +47,11 @@ pub trait Image {
     unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel;
 }
 
-impl<T, U> Image for U where U: Deref<Target = T>, T: Image {
+impl<T, U> Image for U
+where
+    U: Deref<Target = T> + ?Sized,
+    T: Image + ?Sized
+{
     type Pixel = T::Pixel;
 
     fn width(&self) -> usize { self.deref().width() }
