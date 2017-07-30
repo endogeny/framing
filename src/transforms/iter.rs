@@ -2,11 +2,8 @@ use rayon::prelude::*;
 use super::super::Image;
 
 /// Iterates over the pixels of a frame sequentially.
-pub fn iter<'a, T>(frame: &'a T)
+pub fn iter<'a, T: Image>(frame: &'a T)
     -> impl Iterator<Item = (usize, usize, T::Pixel)>
-where
-    T: Image + Sync,
-    T::Pixel: Send,
 {
     let (w, h) = (frame.width(), frame.height());
 
