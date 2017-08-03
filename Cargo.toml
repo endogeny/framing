@@ -1,6 +1,7 @@
 [package]
 name = "framing"
 description = "Fast frames for video and images."
+keywords = ["video", "image", "frame", "pixel", "transform"]
 repository = "https://github.com/quadrupleslap/framing"
 documentation = "https://docs.rs/framing"
 license = "MIT"
