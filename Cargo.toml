@@ -4,7 +4,7 @@ description = "Fast frames for video and images."
 repository = "https://github.com/quadrupleslap/framing"
 documentation = "https://docs.rs/framing"
 license = "MIT"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["Ram <quadrupleslap@gmail.com>"]
 
 [dependencies]

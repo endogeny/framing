@@ -3,7 +3,7 @@ use super::super::Image;
 
 /// Iterates over the pixels of a frame sequentially.
 pub fn iter<'a, T: Image>(frame: &'a T)
-    -> impl Iterator<Item = (usize, usize, T::Pixel)>
+    -> impl Iterator<Item = (usize, usize, T::Pixel)> + ExactSizeIterator
 {
     let (w, h) = (frame.width(), frame.height());
 
