@@ -5,7 +5,7 @@ keywords = ["video", "image", "frame", "pixel", "transform"]
 repository = "https://github.com/quadrupleslap/framing"
 documentation = "https://docs.rs/framing"
 license = "MIT"
-version = "0.3.4"
+version = "0.3.5"
 authors = ["Ram <quadrupleslap@gmail.com>"]
 
 [dependencies]
