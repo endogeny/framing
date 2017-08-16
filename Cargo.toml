@@ -11,4 +11,3 @@ authors = ["Ram <quadrupleslap@gmail.com>"]
 [dependencies]
 clamp = "0.1"
 rayon = "0.8"
-time = "0.1"

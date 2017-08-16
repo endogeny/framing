@@ -5,7 +5,6 @@
 
 extern crate clamp;
 extern crate rayon;
-extern crate time;
 
 mod formats;
 mod function;
