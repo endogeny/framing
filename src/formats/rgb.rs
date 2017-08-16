@@ -5,7 +5,7 @@ use super::AsBytes;
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Rgb<T = u8>(pub T, pub T, pub T);
 
-/// A pixel that is four bytes long and is made of a blue, green and red
+/// A pixel that is three bytes long and is made of a blue, green and red
 /// channel, in that order.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Bgr<T = u8>(pub T, pub T, pub T);
