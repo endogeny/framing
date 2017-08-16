@@ -1,4 +1,3 @@
-use bytes::{Bytes, BytesMut};
 use rayon::prelude::*;
 use std::marker::PhantomData;
 use std::ptr;
@@ -12,14 +11,14 @@ use super::{Image, AsBytes};
 /// store the RGBA values of the top-left pixel, then each of the RGBA values of
 /// the pixel immediately to the right, and so on, moving down through each row.
 #[derive(Clone, Debug)]
-pub struct ChunkyFrame<T> {
-    bytes: Bytes,
+pub struct ChunkyFrame<T, V = Vec<u8>> {
+    bytes: V,
     width: usize,
     height: usize,
     pixel: PhantomData<T>
 }
 
-impl<T> Image for ChunkyFrame<T> where T: AsBytes {
+impl<T, V> Image for ChunkyFrame<T, V> where T: AsBytes, V: AsRef<[u8]> {
     type Pixel = T;
 
     fn width(&self)  -> usize { self.width }
@@ -30,7 +29,7 @@ impl<T> Image for ChunkyFrame<T> where T: AsBytes {
         let mut bytes = T::Bytes::default();
 
         ptr::copy_nonoverlapping(
-            self.bytes.as_ptr().offset(off as isize),
+            self.bytes.as_ref().as_ptr().offset(off as isize),
             bytes.as_mut().as_mut_ptr(),
             T::width()
         );
@@ -39,7 +38,7 @@ impl<T> Image for ChunkyFrame<T> where T: AsBytes {
     }
 }
 
-impl<T> ChunkyFrame<T> where T: AsBytes {
+impl<T, V> ChunkyFrame<T, V> where T: AsBytes, V: AsRef<[u8]> {
     /// Creates a new frame backed by the provided byte source.
     ///
     /// # Panics
@@ -49,20 +48,19 @@ impl<T> ChunkyFrame<T> where T: AsBytes {
     pub fn from_bytes(
         width: usize,
         height: usize,
-        bytes: Bytes
+        bytes: V
     ) -> Self {
-        assert_eq!(bytes.len(), width * height * T::width());
+        assert_eq!(bytes.as_ref().len(), width * height * T::width());
         Self { bytes, width, height, pixel: PhantomData }
     }
 
     /// Returns a read-only view into the frame's byte source.
-    ///
-    /// This function is not as slow as you'd expect, because `Bytes` is
-    /// actually reference-counted.
-    pub fn bytes(&self) -> Bytes {
-        self.bytes.clone()
+    pub fn bytes(&self) -> &V {
+        &self.bytes
     }
+}
 
+impl<T> ChunkyFrame<T> where T: AsBytes {
     /// Creates a new frame using the given frame to fill the buffer.
     /// It is guaranteed that the mapping will be called **exactly once** for
     /// each of the integers in the range `[0, width) * [0, height)`.
@@ -72,7 +70,7 @@ impl<T> ChunkyFrame<T> where T: AsBytes {
         let length = width * height;
         let size = T::width() * length;
 
-        let mut bytes = BytesMut::with_capacity(size);
+        let mut bytes = Vec::with_capacity(size);
         let ptr = AtomicPtr::new(bytes.as_mut_ptr());
         unsafe { bytes.set_len(size); }
 
@@ -89,7 +87,7 @@ impl<T> ChunkyFrame<T> where T: AsBytes {
             );
         });
 
-        Self::from_bytes(width, height, bytes.freeze())
+        Self::from_bytes(width, height, bytes)
     }
 }
 

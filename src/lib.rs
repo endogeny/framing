@@ -3,7 +3,6 @@
 
 //! Fast image frames.
 
-extern crate bytes;
 extern crate clamp;
 extern crate rayon;
 extern crate time;
