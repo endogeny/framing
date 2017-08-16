@@ -1,7 +1,9 @@
+mod rgb;
 mod rgba;
 mod grayscale;
 mod yuv;
 
+pub use self::rgb::*;
 pub use self::rgba::*;
 pub use self::grayscale::*;
 pub use self::yuv::*;

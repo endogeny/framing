@@ -5,19 +5,31 @@ use super::AsBytes;
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Rgba<T = u8>(pub T, pub T, pub T, pub T);
 
-unsafe impl AsBytes for Rgba {
-    type Bytes = [u8; 4];
-    fn width() -> usize { 4 }
-}
+/// A pixel that is four bytes long and is made of a blue, green, red and alpha
+/// channel, in that order.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
+pub struct Bgra<T = u8>(pub T, pub T, pub T, pub T);
 
-impl From<[u8; 4]> for Rgba {
-    fn from(c: [u8; 4]) -> Self {
-        Rgba(c[0], c[1], c[2], c[3])
+macro_rules! four {
+    ($x:ident) => {
+        unsafe impl AsBytes for $x {
+            type Bytes = [u8; 4];
+            fn width() -> usize { 4 }
+        }
+
+        impl From<[u8; 4]> for $x {
+            fn from(c: [u8; 4]) -> Self {
+                $x(c[0], c[1], c[2], c[3])
+            }
+        }
+
+        impl From<$x> for [u8; 4] {
+            fn from(p: $x) -> Self {
+                [p.0, p.1, p.2, p.3]
+            }
+        }
     }
 }
 
-impl From<Rgba> for [u8; 4] {
-    fn from(p: Rgba) -> Self {
-        [p.0, p.1, p.2, p.3]
-    }
-}
+four!(Rgba);
+four!(Bgra);
