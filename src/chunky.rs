@@ -11,14 +11,22 @@ use super::{Image, AsBytes};
 /// store the RGBA values of the top-left pixel, then each of the RGBA values of
 /// the pixel immediately to the right, and so on, moving down through each row.
 #[derive(Clone, Debug)]
-pub struct ChunkyFrame<T, V = Vec<u8>> {
+pub struct Chunky<T, V = Vec<u8>>
+where
+    T: AsBytes,
+    V: AsRef<[u8]>
+{
     bytes: V,
     width: usize,
     height: usize,
     pixel: PhantomData<T>
 }
 
-impl<T, V> Image for ChunkyFrame<T, V> where T: AsBytes, V: AsRef<[u8]> {
+impl<T, V> Image for Chunky<T, V>
+where
+    T: AsBytes,
+    V: AsRef<[u8]>
+{
     type Pixel = T;
 
     fn width(&self)  -> usize { self.width }
@@ -38,7 +46,11 @@ impl<T, V> Image for ChunkyFrame<T, V> where T: AsBytes, V: AsRef<[u8]> {
     }
 }
 
-impl<T, V> ChunkyFrame<T, V> where T: AsBytes, V: AsRef<[u8]> {
+impl<T, V> Chunky<T, V>
+where
+    T: AsBytes,
+    V: AsRef<[u8]>
+{
     /// Creates a new frame backed by the provided byte source.
     ///
     /// # Panics
@@ -58,9 +70,25 @@ impl<T, V> ChunkyFrame<T, V> where T: AsBytes, V: AsRef<[u8]> {
     pub fn bytes(&self) -> &V {
         &self.bytes
     }
+
+    /// Recovers the byte source.
+    pub fn into_bytes(self) -> V {
+        self.bytes
+    }
 }
 
-impl<T> ChunkyFrame<T> where T: AsBytes {
+impl<T, V> Chunky<T, V>
+where
+    T: AsBytes,
+    V: AsRef<[u8]> + AsMut<[u8]>
+{
+    /// Returns a mutable view into the frame's byte source.
+    pub fn bytes_mut(&mut self) -> &mut [u8] {
+        self.bytes.as_mut()
+    }
+}
+
+impl<T> Chunky<T> where T: AsBytes {
     /// Creates a new frame using the given frame to fill the buffer.
     /// It is guaranteed that the mapping will be called **exactly once** for
     /// each of the integers in the range `[0, width) * [0, height)`.
@@ -96,7 +124,7 @@ fn black() {
     use super::{Function, Rgba, iter};
 
     let (w, h) = (1920, 1080);
-    let frame = ChunkyFrame::new(
+    let frame = Chunky::new(
         Function::new(w, h, |_, _| Rgba(0, 0, 0, 0))
     );
 
