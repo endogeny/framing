@@ -10,6 +10,18 @@ pub struct Rgba<T = u8>(pub T, pub T, pub T, pub T);
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Bgra<T = u8>(pub T, pub T, pub T, pub T);
 
+impl<T> From<Bgra<T>> for Rgba<T> {
+    fn from(Bgra(b, g, r, a): Bgra<T>) -> Self {
+        Rgba(r, g, b, a)
+    }
+}
+
+impl<T> From<Rgba<T>> for Bgra<T> {
+    fn from(Rgba(r, g, b, a): Rgba<T>) -> Self {
+        Bgra(b, g, r, a)
+    }
+}
+
 macro_rules! four {
     ($x:ident) => {
         unsafe impl AsBytes for $x {
