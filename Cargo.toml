@@ -2,7 +2,7 @@
 name = "framing"
 description = "Fast frames for video and images."
 keywords = ["video", "image", "frame", "pixel", "transform"]
-repository = "https://github.com/quadrupleslap/framing"
+repository = "https://github.com/endogeny/framing"
 documentation = "https://docs.rs/framing"
 license = "MIT"
 version = "0.6.0"
