@@ -1,20 +1,20 @@
-#![feature(conservative_impl_trait)]
 #![warn(missing_docs)]
 
 //! Fast image frames.
 
-extern crate clamp;
 extern crate rayon;
 
+mod chunky;
+mod clamp;
 mod formats;
 mod function;
-mod chunky;
 mod transforms;
 
-pub use self::formats::*;
-pub use self::transforms::*;
 pub use self::chunky::*;
+pub use self::clamp::*;
+pub use self::formats::*;
 pub use self::function::*;
+pub use self::transforms::*;
 use std::ops::Deref;
 
 /// A `Image` is just a still image.
@@ -29,7 +29,7 @@ pub trait Image {
     type Pixel;
 
     /// The width of the frame in pixels.
-    fn width(&self)  -> usize;
+    fn width(&self) -> usize;
 
     /// The height of the frame in pixels.
     fn height(&self) -> usize;
@@ -48,12 +48,16 @@ pub trait Image {
 impl<T, U> Image for U
 where
     U: Deref<Target = T> + ?Sized,
-    T: Image + ?Sized
+    T: Image + ?Sized,
 {
     type Pixel = T::Pixel;
 
-    fn width(&self) -> usize { self.deref().width() }
-    fn height(&self) -> usize { self.deref().height() }
+    fn width(&self) -> usize {
+        self.deref().width()
+    }
+    fn height(&self) -> usize {
+        self.deref().height()
+    }
 
     unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel {
         self.deref().pixel(x, y)

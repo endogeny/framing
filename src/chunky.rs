@@ -1,8 +1,8 @@
+use super::{AsBytes, Image};
 use rayon::prelude::*;
 use std::marker::PhantomData;
 use std::ptr;
 use std::sync::atomic::{AtomicPtr, Ordering};
-use super::{Image, AsBytes};
 
 /// A [chunky frame](https://en.wikipedia.org/wiki/Packed_pixel).
 ///
@@ -15,18 +15,22 @@ pub struct Chunky<T, V = Vec<u8>> {
     bytes: V,
     width: usize,
     height: usize,
-    pixel: PhantomData<T>
+    pixel: PhantomData<T>,
 }
 
 impl<T, V> Image for Chunky<T, V>
 where
     T: AsBytes,
-    V: AsRef<[u8]>
+    V: AsRef<[u8]>,
 {
     type Pixel = T;
 
-    fn width(&self)  -> usize { self.width }
-    fn height(&self) -> usize { self.height }
+    fn width(&self) -> usize {
+        self.width
+    }
+    fn height(&self) -> usize {
+        self.height
+    }
 
     unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel {
         let off = T::width() * (y * self.width + x);
@@ -35,7 +39,7 @@ where
         ptr::copy_nonoverlapping(
             self.bytes.as_ref().as_ptr().offset(off as isize),
             bytes.as_mut().as_mut_ptr(),
-            T::width()
+            T::width(),
         );
 
         bytes.into()
@@ -52,10 +56,15 @@ impl<T, V> Chunky<T, V> {
     pub fn from_bytes(width: usize, height: usize, bytes: V) -> Self
     where
         T: AsBytes,
-        V: AsRef<[u8]>
+        V: AsRef<[u8]>,
     {
         assert_eq!(bytes.as_ref().len(), width * height * T::width());
-        Self { bytes, width, height, pixel: PhantomData }
+        Self {
+            bytes,
+            width,
+            height,
+            pixel: PhantomData,
+        }
     }
 
     /// Returns a read-only view into the frame's byte source.
@@ -71,7 +80,7 @@ impl<T, V> Chunky<T, V> {
     /// Returns a mutable view into the frame's byte source.
     pub fn bytes_mut(&mut self) -> &mut [u8]
     where
-        V: AsMut<[u8]>
+        V: AsMut<[u8]>,
     {
         self.bytes.as_mut()
     }
@@ -86,7 +95,7 @@ impl<T, V> Chunky<T, V> {
     where
         T: AsBytes,
         U: Image<Pixel = T> + Sync,
-        V: AsMut<[u8]>
+        V: AsMut<[u8]>,
     {
         assert_eq!(frame.width(), self.width);
         assert_eq!(frame.height(), self.height);
@@ -103,26 +112,31 @@ impl<T, V> Chunky<T, V> {
             ptr::copy_nonoverlapping(
                 bytes.as_ref().as_ptr(),
                 ptr.offset((T::width() * i) as _),
-                T::width()
+                T::width(),
             );
         });
     }
 }
 
-impl<T> Chunky<T> where T: AsBytes {
+impl<T> Chunky<T>
+where
+    T: AsBytes,
+{
     /// Creates a new frame using the given frame to fill the buffer.
     /// It is guaranteed that the mapping will be called **exactly once** for
     /// each of the integers in the range `[0, width) * [0, height)`.
     pub fn new<U>(frame: U) -> Self
     where
-        U: Image<Pixel = T> + Sync
+        U: Image<Pixel = T> + Sync,
     {
         let (width, height) = (frame.width(), frame.height());
         let length = width * height;
         let size = T::width() * length;
 
         let mut bytes = Vec::with_capacity(size);
-        unsafe { bytes.set_len(size); }
+        unsafe {
+            bytes.set_len(size);
+        }
 
         let mut chunky = Self::from_bytes(width, height, bytes);
         chunky.copy_from(frame);
@@ -132,12 +146,10 @@ impl<T> Chunky<T> where T: AsBytes {
 
 #[test]
 fn black() {
-    use super::{Function, Rgba, iter};
+    use super::{iter, Function, Rgba};
 
     let (w, h) = (1920, 1080);
-    let frame = Chunky::new(
-        Function::new(w, h, |_, _| Rgba(0, 0, 0, 0))
-    );
+    let frame = Chunky::new(Function::new(w, h, |_, _| Rgba(0, 0, 0, 0)));
 
     assert_eq!(frame.width(), w);
     assert_eq!(frame.height(), h);

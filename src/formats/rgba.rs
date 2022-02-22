@@ -26,7 +26,9 @@ macro_rules! four {
     ($x:ident) => {
         unsafe impl AsBytes for $x {
             type Bytes = [u8; 4];
-            fn width() -> usize { 4 }
+            fn width() -> usize {
+                4
+            }
         }
 
         impl From<[u8; 4]> for $x {
@@ -40,7 +42,7 @@ macro_rules! four {
                 [p.0, p.1, p.2, p.3]
             }
         }
-    }
+    };
 }
 
 four!(Rgba);

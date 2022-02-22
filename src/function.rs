@@ -7,18 +7,26 @@ use super::Image;
 /// with this struct essentially lets you build anonymous frames.
 #[derive(Clone, Debug)]
 pub struct Function<T, F>
-where F: Fn(usize, usize) -> T {
+where
+    F: Fn(usize, usize) -> T,
+{
     width: usize,
     height: usize,
-    func: F
+    func: F,
 }
 
 impl<T, F> Image for Function<T, F>
-where F: Fn(usize, usize) -> T{
+where
+    F: Fn(usize, usize) -> T,
+{
     type Pixel = T;
 
-    fn width(&self)  -> usize { self.width }
-    fn height(&self) -> usize { self.height }
+    fn width(&self) -> usize {
+        self.width
+    }
+    fn height(&self) -> usize {
+        self.height
+    }
 
     unsafe fn pixel(&self, x: usize, y: usize) -> Self::Pixel {
         (self.func)(x, y)
@@ -26,10 +34,16 @@ where F: Fn(usize, usize) -> T{
 }
 
 impl<T, F> Function<T, F>
-where F: Fn(usize, usize) -> T {
+where
+    F: Fn(usize, usize) -> T,
+{
     /// Creates a new frame.
     pub fn new(width: usize, height: usize, func: F) -> Self {
-        Self { width, height, func }
+        Self {
+            width,
+            height,
+            func,
+        }
     }
 }
 

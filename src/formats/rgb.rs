@@ -38,7 +38,9 @@ macro_rules! three {
     ($x:ident) => {
         unsafe impl AsBytes for $x {
             type Bytes = [u8; 3];
-            fn width() -> usize { 3 }
+            fn width() -> usize {
+                3
+            }
         }
 
         impl From<[u8; 3]> for $x {
@@ -52,7 +54,7 @@ macro_rules! three {
                 [p.0, p.1, p.2]
             }
         }
-    }
+    };
 }
 
 three!(Rgb);
