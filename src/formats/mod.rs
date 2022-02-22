@@ -1,11 +1,11 @@
+mod grayscale;
 mod rgb;
 mod rgba;
-mod grayscale;
 mod yuv;
 
+pub use self::grayscale::*;
 pub use self::rgb::*;
 pub use self::rgba::*;
-pub use self::grayscale::*;
 pub use self::yuv::*;
 
 // TODO(quadrupleslap): `AsBytes` for non-`u8`-backed pixel types.
@@ -23,10 +23,7 @@ pub unsafe trait AsBytes: Sized {
     ///
     /// Unless you know better, this type should probably be `[u8; N]`, where
     /// `N` is the number of bytes in each pixel.
-    type Bytes:
-        AsRef<[u8]> + AsMut<[u8]>
-        + Default
-        + From<Self> + Into<Self>;
+    type Bytes: AsRef<[u8]> + AsMut<[u8]> + Default + From<Self> + Into<Self>;
 
     /// The number of channels in each pixel.
     ///

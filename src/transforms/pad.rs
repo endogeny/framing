@@ -10,9 +10,16 @@ pub fn pad<T: Image>(
     left: usize,
     right: usize,
     padding: T::Pixel,
-    frame: T
+    frame: T,
 ) -> Pad<T> {
-    Pad { top, bottom, left, right, padding, frame }
+    Pad {
+        top,
+        bottom,
+        left,
+        right,
+        padding,
+        frame,
+    }
 }
 
 #[doc(hidden)]
@@ -22,15 +29,21 @@ pub struct Pad<T: Image> {
     left: usize,
     right: usize,
     padding: T::Pixel,
-    frame: T
+    frame: T,
 }
 
 impl<T: Image> Image for Pad<T>
-where T::Pixel: Clone {
+where
+    T::Pixel: Clone,
+{
     type Pixel = T::Pixel;
 
-    fn width(&self) -> usize { self.left + self.frame.width() + self.right }
-    fn height(&self) -> usize { self.top + self.frame.height() + self.bottom }
+    fn width(&self) -> usize {
+        self.left + self.frame.width() + self.right
+    }
+    fn height(&self) -> usize {
+        self.top + self.frame.height() + self.bottom
+    }
 
     unsafe fn pixel(&self, mut x: usize, mut y: usize) -> Self::Pixel {
         if x < self.left || y < self.top {

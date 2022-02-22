@@ -1,10 +1,10 @@
-use rayon::prelude::*;
 use super::super::Image;
+use rayon::prelude::*;
 
 /// Iterates over the pixels of a frame sequentially.
-pub fn iter<'a, T: Image>(frame: &'a T)
-    -> impl Iterator<Item = (usize, usize, T::Pixel)> + ExactSizeIterator
-{
+pub fn iter<T: Image>(
+    frame: &T,
+) -> impl Iterator<Item = (usize, usize, T::Pixel)> + ExactSizeIterator + '_ {
     let (w, h) = (frame.width(), frame.height());
 
     (0..w * h).map(move |i| unsafe {
@@ -14,8 +14,7 @@ pub fn iter<'a, T: Image>(frame: &'a T)
 }
 
 /// Iterates over the pixels of a frame in parallel.
-pub fn par_iter<'a, T>(frame: &'a T)
-    -> impl ParallelIterator<Item = (usize, usize, T::Pixel)>
+pub fn par_iter<T>(frame: &T) -> impl ParallelIterator<Item = (usize, usize, T::Pixel)> + '_
 where
     T: Image + Sync,
     T::Pixel: Send,

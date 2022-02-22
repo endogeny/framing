@@ -5,9 +5,8 @@ keywords = ["video", "image", "frame", "pixel", "transform"]
 repository = "https://github.com/endogeny/framing"
 documentation = "https://docs.rs/framing"
 license = "MIT"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Ram <quadrupleslap@gmail.com>"]
 
 [dependencies]
-clamp = "0.1"
-rayon = "0.8"
+rayon = "1.5.1"
